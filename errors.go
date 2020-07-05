@@ -13,9 +13,15 @@ type errors struct {
 	errorArray *[]error
 }
 
-func (e *errors) printErrorArray() {
-	for _, error := range *e.errorArray {
-		fmt.Println(error.Error())
+func (e *errors) printErrorArray(st fmt.State, verb rune) {
+	switch verb {
+	case 'v':
+		switch {
+		case st.Flag('+'):
+			for _, error := range *e.errorArray {
+				fmt.Fprintf(st, error.Error()+"\n")
+			}
+		}
 	}
 }
 
@@ -27,9 +33,9 @@ func (e *errors) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			fmt.Println("------error stack------")
-			e.printErrorArray()
-			fmt.Println("------function stack------")
+			fmt.Fprintf(s, "------error stack------\n")
+			e.printErrorArray(s, verb)
+			fmt.Fprintf(s, "------function stack------\n")
 			e.stack.Format(s, verb)
 			return
 		}
